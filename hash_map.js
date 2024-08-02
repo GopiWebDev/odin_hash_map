@@ -1,7 +1,8 @@
 class HashMap {
-  constructor(bucketSize = 16) {
+  constructor(bucketSize = 16, loadFactor = 0.75) {
     this.bucketSize = bucketSize;
     this.buckets = new Array(bucketSize).fill(null).map(() => []);
+    this.loadFactor = loadFactor;
     this.size = 0;
   }
 
@@ -16,6 +17,20 @@ class HashMap {
     }
 
     return hashCode;
+  }
+
+  checkLoadCapacity() {
+    if (this.size / this.bucketSize > this.loadFactor) {
+      const oldBucket = this.buckets;
+      this.bucketSize *= 2;
+      this.buckets = new Array(this.bucketSize).fill(null).map(() => []);
+      this.size = 0;
+      oldBucket.forEach((bucket) => {
+        bucket.forEach((item) => {
+          this.set(item.key, item.value);
+        });
+      });
+    }
   }
 
   set(key, value) {
@@ -37,6 +52,7 @@ class HashMap {
 
     bucket.push({ key, value });
     this.size++;
+    this.checkLoadCapacity();
     return true;
   }
 
@@ -98,9 +114,60 @@ class HashMap {
   clear() {
     return (this.buckets = new Array(this.bucketSize).fill(null).map(() => []));
   }
+
+  keys() {
+    const keysArray = [];
+
+    this.buckets.forEach((bucket) => {
+      bucket.forEach((item) => {
+        keysArray.push(item.key);
+      });
+    });
+
+    return keysArray;
+  }
+
+  values() {
+    const valuesArray = [];
+
+    this.buckets.forEach((bucket) => {
+      bucket.forEach((item) => {
+        valuesArray.push(item.value);
+      });
+    });
+
+    return valuesArray;
+  }
+
+  entries() {
+    let entriesArray = [];
+
+    this.buckets.forEach((bucket) => {
+      bucket.forEach((item) => {
+        entriesArray.push([item.key, item.value]);
+      });
+    });
+
+    return entriesArray;
+  }
+
+  getLoad() {
+    return this.loadFactor;
+  }
 }
 
-let hashMap = new HashMap();
-hashMap.set('Carlos', 'I am the old value.');
-hashMap.set('Carlos', 'I am the new value.');
-hashMap.set('john', 'wick');
+const test = new HashMap();
+test.set('apple', 'red');
+test.set('banana', 'yellow');
+test.set('carrot', 'orange');
+test.set('dog', 'brown');
+test.set('elephant', 'gray');
+test.set('frog', 'green');
+test.set('grape', 'purple');
+test.set('hat', 'black');
+test.set('ice cream', 'white');
+test.set('jacket', 'blue');
+test.set('kite', 'pink');
+test.set('lion', 'golden');
+
+test.set('moon', 'silver');
