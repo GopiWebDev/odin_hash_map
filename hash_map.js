@@ -17,6 +17,7 @@ class HashMap {
   }
 
   set(key, value) {
+    if (!key || !value) return;
     let indexValue = this.hash(key);
 
     if (!this.keyMap[indexValue]) {
@@ -37,10 +38,22 @@ class HashMap {
       return null;
     }
   }
+
+  has(key) {
+    let indexValue = this.hash(key);
+    if (this.keyMap[indexValue]) {
+      for (let i = 0; i < this.keyMap[indexValue].length; i++) {
+        if (this.keyMap[indexValue][i][0] === key) {
+          return true;
+        }
+      }
+    } else {
+      return false;
+    }
+  }
 }
 
 let hashMap = new HashMap();
 hashMap.set('Carlos', 'I am the old value.');
-hashMap.set('Carlos', 'I am the new value.');
 hashMap.set('john', 'wick');
 console.log(hashMap.keyMap);
