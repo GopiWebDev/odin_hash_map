@@ -1,6 +1,8 @@
 class HashMap {
-  constructor(size = 16) {
-    this.keyMap = new Array(size);
+  constructor(bucketSize = 16) {
+    this.bucketSize = bucketSize;
+    this.buckets = new Array(bucketSize).fill(null).map(() => []);
+    this.size = 0;
   }
 
   hash(key) {
@@ -10,7 +12,7 @@ class HashMap {
     for (let i = 0; i < Math.min(100, key.length); i++) {
       let char = key[i];
       let value = char.charCodeAt(0);
-      hashCode = (hashCode * primeNumber + value) % this.keyMap.length;
+      hashCode = (hashCode * primeNumber + value) % this.bucketSize;
     }
 
     return hashCode;
@@ -18,42 +20,87 @@ class HashMap {
 
   set(key, value) {
     if (!key || !value) return;
-    let indexValue = this.hash(key);
 
-    if (!this.keyMap[indexValue]) {
-      this.keyMap[indexValue] = [];
+    let index = this.hash(key);
+    if (index < 0 || index >= this.buckets.length) {
+      throw new Error('Index is inaccessible');
     }
-    this.keyMap[indexValue].push([key, value]);
+
+    let bucket = this.buckets[index];
+
+    for (let i = 0; i < bucket.length; i++) {
+      if (bucket[i].key === key) {
+        bucket[i].value = value;
+        return true;
+      }
+    }
+
+    bucket.push({ key, value });
+    this.size++;
+    return true;
   }
 
   get(key) {
-    let indexValue = this.hash(key);
-    if (this.keyMap[indexValue]) {
-      for (let i = 0; i < this.keyMap[indexValue].length; i++) {
-        if (this.keyMap[indexValue][i][0] === key) {
-          return this.keyMap[indexValue][i][1];
-        }
-      }
-    } else {
-      return null;
+    let index = this.hash(key);
+    if (index < 0 || index >= this.buckets.length) {
+      throw new Error('Index is inaccessible');
     }
+
+    let bucket = this.buckets[index];
+
+    for (let i = 0; i < bucket.length; i++) {
+      if (bucket[i].key === key) {
+        return bucket[i].value;
+      }
+    }
+    return null;
   }
 
   has(key) {
-    let indexValue = this.hash(key);
-    if (this.keyMap[indexValue]) {
-      for (let i = 0; i < this.keyMap[indexValue].length; i++) {
-        if (this.keyMap[indexValue][i][0] === key) {
-          return true;
-        }
-      }
-    } else {
-      return false;
+    let index = this.hash(key);
+    if (index < 0 || index >= this.buckets.length) {
+      throw new Error('Index is inaccessible');
     }
+
+    let bucket = this.buckets[index];
+
+    for (let i = 0; i < bucket.length; i++) {
+      if (bucket[i].key === key) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  remove(key) {
+    let index = this.hash(key);
+    if (index < 0 || index >= this.buckets.length) {
+      throw new Error('Index is inaccessible');
+    }
+
+    let bucket = this.buckets[index];
+
+    for (let i = 0; i < bucket.length; i++) {
+      if (bucket[i].key === key) {
+        bucket.splice(i, 1);
+        this.size--;
+        return true;
+      }
+    }
+    return false;
+  }
+
+  length() {
+    return this.size;
+  }
+
+  clear() {
+    return (this.buckets = new Array(this.bucketSize).fill(null).map(() => []));
   }
 }
 
 let hashMap = new HashMap();
 hashMap.set('Carlos', 'I am the old value.');
+hashMap.set('Carlos', 'I am the new value.');
 hashMap.set('john', 'wick');
-console.log(hashMap.keyMap);
